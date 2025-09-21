@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮✨ VIB34D LATTICE + HYPERCUBE OVERLAY</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000011;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #00ddff;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        /* Collapsible Menu System */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 150, 255, 0.8);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(0, 200, 255, 1.0);
+            transform: scale(1.1);
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: -350px;
+            width: 320px;
+            height: calc(100vh - 40px);
+            background: rgba(0, 0, 30, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #0099ff;
+            backdrop-filter: blur(15px);
+            z-index: 150;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .controls.open {
+            left: 20px;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #0099ff;
+        }
+
+        .system-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .system-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 100, 200, 0.3);
+            border: 1px solid #0099ff;
+            border-radius: 8px;
+            color: #00ddff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 11px;
+        }
+
+        .system-btn.active {
+            background: rgba(0, 150, 255, 0.8);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 150, 255, 0.5);
+        }
+
+        .shape-overlay-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 0, 100, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 0, 150, 0.3);
+        }
+
+        .shape-btn {
+            padding: 10px;
+            background: rgba(255, 50, 150, 0.2);
+            border: 1px solid #ff0088;
+            border-radius: 8px;
+            color: #ff88dd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .shape-btn.active {
+            background: rgba(255, 0, 150, 0.6);
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 0, 150, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 150, 255, 0.3);
+        }
+
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00ffff;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 11px;
+            color: #00ddff;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .audio-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255, 100, 0, 0.3);
+            border: 1px solid #ff6600;
+            border-radius: 5px;
+            color: #ffaa44;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .audio-btn.active {
+            background: rgba(255, 150, 0, 0.8);
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 150, 0, 0.5);
+        }
+
+        .glitch-controls {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 100, 0.5);
+            animation: glitchBorder 3s infinite;
+        }
+
+        @keyframes glitchBorder {
+            0% { border-color: rgba(255, 0, 100, 0.5); }
+            25% { border-color: rgba(0, 255, 100, 0.5); }
+            50% { border-color: rgba(100, 0, 255, 0.5); }
+            75% { border-color: rgba(255, 255, 0, 0.5); }
+            100% { border-color: rgba(255, 0, 100, 0.5); }
+        }
+
+        .gesture-info {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                width: calc(100vw - 40px);
+                left: -100vw;
+            }
+            .controls.open {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <div class="controls" id="controls">
+        <div class="controls-header">
+            <div style="color: #00ffff; font-weight: bold;">🔮✨ LATTICE + HYPERCUBE</div>
+            <button onclick="toggleMenu()" style="background: none; border: none; color: #00ddff; font-size: 20px; cursor: pointer;">✕</button>
+        </div>
+
+        <div class="system-selector">
+            <div class="system-btn active" id="hypercube-btn" onclick="switchSystem('hypercube')">🔮 OVERLAY</div>
+            <div class="system-btn" id="prismatic-btn" onclick="switchSystem('prismatic')">💎 PRISMATIC</div>
+            <div class="system-btn" id="aetheric-btn" onclick="switchSystem('aetheric')">🌀 AETHERIC</div>
+        </div>
+
+        <div class="shape-overlay-selector">
+            <div class="shape-btn" id="none-btn" onclick="switchOverlayShape('none')">⊗<br>NONE</div>
+            <div class="shape-btn active" id="tetrahedron-btn" onclick="switchOverlayShape('tetrahedron')">▲<br>TETRA</div>
+            <div class="shape-btn" id="hypercube-btn-shape" onclick="switchOverlayShape('hypercube')">□<br>CUBE</div>
+            <div class="shape-btn" id="hypersphere-btn" onclick="switchOverlayShape('hypersphere')">●<br>SPHERE</div>
+            <div class="shape-btn" id="torus-btn" onclick="switchOverlayShape('torus')">◯<br>TORUS</div>
+            <div class="shape-btn" id="klein-btn" onclick="switchOverlayShape('klein')">∞<br>KLEIN</div>
+        </div>
+
+        <div class="control-section glitch-controls">
+            <div class="section-header">⚡ MOIRÉ GLITCH OVERLAY</div>
+            <div class="control-group">
+                <label>Overlay Intensity: <span id="overlayIntensity-value">0.8</span></label>
+                <input type="range" id="overlayIntensity" min="0.0" max="2.0" step="0.1" value="0.8">
+            </div>
+            <div class="control-group">
+                <label>Glitch Intensity: <span id="glitchIntensity-value">0.3</span></label>
+                <input type="range" id="glitchIntensity" min="0.0" max="2.0" step="0.1" value="0.3">
+            </div>
+            <div class="control-group">
+                <label>Moiré Pattern: <span id="moireScale-value">15</span></label>
+                <input type="range" id="moireScale" min="5" max="50" step="1" value="15">
+            </div>
+            <div class="control-group">
+                <label>Line Thickness: <span id="lineThickness-value">0.02</span></label>
+                <input type="range" id="lineThickness" min="0.001" max="0.05" step="0.001" value="0.02">
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-header">🎵 AUDIO REACTIVITY</div>
+            <div class="audio-controls">
+                <div class="audio-btn" id="audio-btn" onclick="toggleAudio()">🎵 START</div>
+                <div class="audio-btn" id="gyro-btn" onclick="toggleGyro()">📱 GYRO</div>
+            </div>
+            <div class="control-group">
+                <label>Audio Sensitivity: <span id="audioSensitivity-value">1.0</span></label>
+                <input type="range" id="audioSensitivity" min="0.1" max="3.0" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-header">🌊 4D ROTATIONS</div>
+            <div class="control-group">
+                <label>4D Rotation XW: <span id="rot4dXW-value">0</span></label>
+                <input type="range" id="rot4dXW" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>4D Rotation YW: <span id="rot4dYW-value">0</span></label>
+                <input type="range" id="rot4dYW" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>4D Rotation ZW: <span id="rot4dZW-value">0</span></label>
+                <input type="range" id="rot4dZW" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>4D Rotation XY: <span id="rot4dXY-value">0</span></label>
+                <input type="range" id="rot4dXY" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>4D Rotation XZ: <span id="rot4dXZ-value">0</span></label>
+                <input type="range" id="rot4dXZ" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+            <div class="control-group">
+                <label>4D Rotation YZ: <span id="rot4dYZ-value">0</span></label>
+                <input type="range" id="rot4dYZ" min="-3.14159" max="3.14159" step="0.01" value="0">
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-header">⚙️ LATTICE PARAMETERS</div>
+            <div class="control-group">
+                <label>Grid Density: <span id="gridDensity-value">15</span></label>
+                <input type="range" id="gridDensity" min="1" max="50" step="1" value="15">
+            </div>
+            <div class="control-group">
+                <label>Scale: <span id="scale-value">1.0</span></label>
+                <input type="range" id="scale" min="0.1" max="3.0" step="0.1" value="1.0">
+            </div>
+            <div class="control-group">
+                <label>Speed: <span id="speed-value">1.0</span></label>
+                <input type="range" id="speed" min="0.1" max="5.0" step="0.1" value="1.0">
+            </div>
+            <div class="control-group">
+                <label>Intensity: <span id="intensity-value">0.9</span></label>
+                <input type="range" id="intensity" min="0.1" max="2.0" step="0.1" value="0.9">
+            </div>
+            <div class="control-group">
+                <label>Chaos: <span id="chaos-value">0.2</span></label>
+                <input type="range" id="chaos" min="0.0" max="1.0" step="0.1" value="0.2">
+            </div>
+            <div class="control-group">
+                <label>Morph Factor: <span id="morphFactor-value">0.5</span></label>
+                <input type="range" id="morphFactor" min="0.0" max="1.0" step="0.1" value="0.5">
+            </div>
+            <div class="control-group">
+                <label>Saturation: <span id="saturation-value">0.6</span></label>
+                <input type="range" id="saturation" min="0.0" max="1.0" step="0.1" value="0.6">
+            </div>
+            <div class="control-group">
+                <label>Hue: <span id="hue-value">200</span></label>
+                <input type="range" id="hue" min="0" max="360" step="10" value="200">
+            </div>
+        </div>
+
+        <div class="gesture-info">
+            <strong>🤏 MULTI-TOUCH OVERLAY SWITCHING:</strong><br>
+            • Single Touch: Hypertetrahedron overlay<br>
+            • Two Finger: Hypercube overlay<br>
+            • Three Finger: Hypersphere overlay<br>
+            • Pinch: Scale control<br><br>
+            <strong>⚡ LATTICE + HYPERCUBE:</strong><br>
+            • 5-layer lattice base system maintained<br>
+            • Hypercube shapes overlay with glitch effects<br>
+            • Contrasting colors and line styles<br>
+        </div>
+    </div>
+
+    <script>
+        // LATTICE + HYPERCUBE OVERLAY SYSTEM
+        class LatticeHypercubeSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                this.program = null;
+                this.time = 0;
+                this.currentSystem = 'hypercube';
+                this.currentOverlayShape = 'tetrahedron';
+
+                // Audio system
+                this.audioContext = null;
+                this.audioAnalyzer = null;
+                this.audioEnabled = false;
+                this.audioSensitivity = 1.0;
+                this.frequencyData = new Uint8Array(512);
+
+                // Gyroscope system
+                this.gyroEnabled = false;
+                this.gyroPermission = false;
+
+                // Multi-touch system
+                this.touches = new Map();
+                this.gestureState = {
+                    pinchScale: 1.0,
+                    rotation: 0,
+                    multiTouchActive: false,
+                    touchCount: 0
+                };
+
+                // Parameters with audio modulation
+                this.baseParameters = {
+                    rot4dXW: 0, rot4dYW: 0, rot4dZW: 0,
+                    rot4dXY: 0, rot4dXZ: 0, rot4dYZ: 0,
+                    gridDensity: 15, scale: 1.0, speed: 1.0,
+                    intensity: 0.9, chaos: 0.2, morphFactor: 0.5,
+                    saturation: 0.6, hue: 200,
+                    glitchIntensity: 0.3, moireScale: 15, lineThickness: 0.02,
+                    overlayIntensity: 0.8
+                };
+
+                this.audioModulation = {
+                    bass: 0, mids: 0, highs: 0,
+                    bassRotations: { xw: 0, yw: 0 },
+                    midsRotations: { zw: 0, xy: 0 },
+                    highRotations: { xz: 0, yz: 0 },
+                    hueShift: 0, densityMod: 0, saturationMod: 0,
+                    lineThicknessMod: 0, glitchMod: 0
+                };
+
+                this.init();
+            }
+
+            async init() {
+                if (!this.gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+
+                this.createShaderProgram();
+                this.setupBuffers();
+                this.setupEventListeners();
+                this.resize();
+
+                console.log('🔮✨ Lattice + Hypercube Overlay System initialized');
+            }
+
+            // AUDIO SYSTEM (same as before)
+            async initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const source = this.audioContext.createMediaStreamSource(stream);
+
+                    this.audioAnalyzer = this.audioContext.createAnalyser();
+                    this.audioAnalyzer.fftSize = 1024;
+                    this.audioAnalyzer.smoothingTimeConstant = 0.8;
+
+                    source.connect(this.audioAnalyzer);
+                    this.frequencyData = new Uint8Array(this.audioAnalyzer.frequencyBinCount);
+
+                    this.audioEnabled = true;
+                    document.getElementById('audio-btn').textContent = '🎵 ON';
+                    document.getElementById('audio-btn').classList.add('active');
+
+                    console.log('🎵 Audio reactivity initialized');
+                } catch (error) {
+                    console.error('Audio initialization failed:', error);
+                }
+            }
+
+            updateAudioReactivity() {
+                if (!this.audioEnabled || !this.audioAnalyzer) return;
+
+                this.audioAnalyzer.getByteFrequencyData(this.frequencyData);
+
+                const bassRange = this.frequencyData.slice(0, 64);
+                const midsRange = this.frequencyData.slice(64, 192);
+                const highRange = this.frequencyData.slice(192, 384);
+
+                this.audioModulation.bass = (bassRange.reduce((a, b) => a + b, 0) / bassRange.length) / 255;
+                this.audioModulation.mids = (midsRange.reduce((a, b) => a + b, 0) / midsRange.length) / 255;
+                this.audioModulation.highs = (highRange.reduce((a, b) => a + b, 0) / highRange.length) / 255;
+
+                const time = this.time * 0.1;
+                const sensitivity = this.audioSensitivity;
+
+                // BASS → Line thickness + glitch + lattice parameters
+                const bassIntensity = this.audioModulation.bass * sensitivity;
+                this.audioModulation.lineThicknessMod = bassIntensity * 0.03;
+                this.audioModulation.glitchMod = Math.sin(time + bassIntensity * 4) * bassIntensity * 1.5;
+                this.audioModulation.bassRotations.xw = Math.sin(time + bassIntensity * 4) * bassIntensity * 2;
+                this.audioModulation.bassRotations.yw = Math.cos(time + bassIntensity * 3) * bassIntensity * 1.5;
+
+                // MIDS → Overlay intensity + moiré patterns
+                const midsIntensity = this.audioModulation.mids * sensitivity;
+                this.audioModulation.midsRotations.zw = Math.sin(time * 2 + midsIntensity * 6) * midsIntensity * 1.8;
+                this.audioModulation.midsRotations.xy = Math.cos(time * 1.5 + midsIntensity * 5) * midsIntensity * 1.2;
+                this.audioModulation.densityMod = midsIntensity * 25;
+
+                // HIGHS → Fine details + contrast
+                const highIntensity = this.audioModulation.highs * sensitivity;
+                this.audioModulation.highRotations = {
+                    xz: Math.sin(time * 3 + highIntensity * 8) * highIntensity * 1.0,
+                    yz: Math.cos(time * 2.5 + highIntensity * 7) * highIntensity * 0.8
+                };
+                this.audioModulation.hueShift = 180 + bassIntensity * 90; // Contrast hue
+                this.audioModulation.saturationMod = 0.8 + highIntensity * 0.2;
+            }
+
+            // GYROSCOPE SYSTEM (same as before)
+            async initGyroscope() {
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    this.gyroPermission = permission === 'granted';
+                } else {
+                    this.gyroPermission = true;
+                }
+
+                if (this.gyroPermission) {
+                    window.addEventListener('deviceorientation', (event) => {
+                        if (!this.gyroEnabled) return;
+
+                        const alpha = (event.alpha || 0) * Math.PI / 180;
+                        const beta = (event.beta || 0) * Math.PI / 180;
+                        const gamma = (event.gamma || 0) * Math.PI / 180;
+
+                        this.baseParameters.rot4dXZ += alpha * 0.01;
+                        this.baseParameters.rot4dYZ += beta * 0.01;
+                        this.baseParameters.rot4dZW += gamma * 0.01;
+
+                        this.updateSliderFromValue('rot4dXZ', this.baseParameters.rot4dXZ);
+                        this.updateSliderFromValue('rot4dYZ', this.baseParameters.rot4dYZ);
+                        this.updateSliderFromValue('rot4dZW', this.baseParameters.rot4dZW);
+                    });
+
+                    this.gyroEnabled = true;
+                    document.getElementById('gyro-btn').textContent = '📱 ON';
+                    document.getElementById('gyro-btn').classList.add('active');
+                    console.log('📱 Gyroscope control initialized');
+                }
+            }
+
+            // MULTI-TOUCH SYSTEM with overlay shape switching
+            setupEventListeners() {
+                this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+                this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+                this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+
+                this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+
+                this.mouseDown = false;
+                this.lastMouseX = 0;
+                this.lastMouseY = 0;
+            }
+
+            handleTouchStart(e) {
+                e.preventDefault();
+                this.touches.clear();
+
+                for (let touch of e.touches) {
+                    this.touches.set(touch.identifier, {
+                        x: touch.clientX,
+                        y: touch.clientY,
+                        startX: touch.clientX,
+                        startY: touch.clientY
+                    });
+                }
+
+                this.gestureState.multiTouchActive = e.touches.length > 1;
+                this.gestureState.touchCount = e.touches.length;
+
+                // OVERLAY SHAPE SWITCHING based on touch count
+                if (e.touches.length === 1) {
+                    this.switchOverlayShape('tetrahedron');
+                } else if (e.touches.length === 2) {
+                    this.switchOverlayShape('hypercube');
+                } else if (e.touches.length === 3) {
+                    this.switchOverlayShape('hypersphere');
+                }
+            }
+
+            handleTouchMove(e) {
+                e.preventDefault();
+
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    const lastTouch = this.touches.get(touch.identifier);
+
+                    if (lastTouch) {
+                        const deltaX = (touch.clientX - lastTouch.x) * 0.01;
+                        const deltaY = (touch.clientY - lastTouch.y) * 0.01;
+
+                        this.baseParameters.rot4dXW += deltaX;
+                        this.baseParameters.rot4dYW += deltaY;
+
+                        // Enhance glitch with movement
+                        this.baseParameters.glitchIntensity = Math.min(2.0,
+                            this.baseParameters.glitchIntensity + Math.abs(deltaX + deltaY) * 0.2);
+
+                        this.updateSliderFromValue('rot4dXW', this.baseParameters.rot4dXW);
+                        this.updateSliderFromValue('rot4dYW', this.baseParameters.rot4dYW);
+                        this.updateSliderFromValue('glitchIntensity', this.baseParameters.glitchIntensity);
+                    }
+                } else if (e.touches.length === 2) {
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+
+                    const centerX = (touch1.clientX + touch2.clientX) / 2;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+                    const distance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) +
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+
+                    const angle = Math.atan2(
+                        touch2.clientY - touch1.clientY,
+                        touch2.clientX - touch1.clientX
+                    );
+
+                    this.baseParameters.rot4dZW = angle * 0.5;
+                    this.baseParameters.rot4dXY = (centerX / window.innerWidth - 0.5) * Math.PI;
+                    this.baseParameters.scale = Math.max(0.1, Math.min(3.0, distance / 200));
+                    this.baseParameters.moireScale = Math.floor(5 + (distance / 10));
+
+                    this.updateSliderFromValue('rot4dZW', this.baseParameters.rot4dZW);
+                    this.updateSliderFromValue('rot4dXY', this.baseParameters.rot4dXY);
+                    this.updateSliderFromValue('scale', this.baseParameters.scale);
+                    this.updateSliderFromValue('moireScale', this.baseParameters.moireScale);
+
+                } else if (e.touches.length === 3) {
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const touch3 = e.touches[2];
+
+                    const centerX = (touch1.clientX + touch2.clientX + touch3.clientX) / 3;
+                    const centerY = (touch1.clientY + touch2.clientY + touch3.clientY) / 3;
+
+                    this.baseParameters.rot4dXZ = (centerX / window.innerWidth - 0.5) * Math.PI * 2;
+                    this.baseParameters.rot4dYZ = (centerY / window.innerHeight - 0.5) * Math.PI * 2;
+
+                    const spread = Math.sqrt(
+                        Math.pow(touch1.clientX - centerX, 2) + Math.pow(touch1.clientY - centerY, 2) +
+                        Math.pow(touch2.clientX - centerX, 2) + Math.pow(touch2.clientY - centerY, 2) +
+                        Math.pow(touch3.clientX - centerX, 2) + Math.pow(touch3.clientY - centerY, 2)
+                    );
+                    this.baseParameters.lineThickness = Math.min(0.05, 0.001 + spread / 8000);
+                    this.baseParameters.overlayIntensity = Math.min(2.0, 0.5 + spread / 500);
+
+                    this.updateSliderFromValue('rot4dXZ', this.baseParameters.rot4dXZ);
+                    this.updateSliderFromValue('rot4dYZ', this.baseParameters.rot4dYZ);
+                    this.updateSliderFromValue('lineThickness', this.baseParameters.lineThickness);
+                    this.updateSliderFromValue('overlayIntensity', this.baseParameters.overlayIntensity);
+                }
+
+                // Update touch positions
+                for (let touch of e.touches) {
+                    this.touches.set(touch.identifier, {
+                        x: touch.clientX,
+                        y: touch.clientY,
+                        startX: this.touches.get(touch.identifier)?.startX || touch.clientX,
+                        startY: this.touches.get(touch.identifier)?.startY || touch.clientY
+                    });
+                }
+            }
+
+            handleTouchEnd(e) {
+                e.preventDefault();
+                this.touches.clear();
+                this.gestureState.multiTouchActive = false;
+                this.gestureState.touchCount = 0;
+
+                // Slowly decay glitch intensity
+                this.baseParameters.glitchIntensity *= 0.9;
+                this.updateSliderFromValue('glitchIntensity', this.baseParameters.glitchIntensity);
+            }
+
+            // Mouse fallback
+            handleMouseDown(e) {
+                this.mouseDown = true;
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+            }
+
+            handleMouseMove(e) {
+                if (!this.mouseDown) return;
+
+                const deltaX = (e.clientX - this.lastMouseX) * 0.01;
+                const deltaY = (e.clientY - this.lastMouseY) * 0.01;
+
+                this.baseParameters.rot4dXW += deltaX;
+                this.baseParameters.rot4dYW += deltaY;
+
+                this.updateSliderFromValue('rot4dXW', this.baseParameters.rot4dXW);
+                this.updateSliderFromValue('rot4dYW', this.baseParameters.rot4dYW);
+
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+            }
+
+            handleMouseUp() {
+                this.mouseDown = false;
+            }
+
+            switchOverlayShape(shape) {
+                this.currentOverlayShape = shape;
+
+                // Update UI
+                document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
+                const shapeBtn = document.getElementById(shape + '-btn') || document.getElementById(shape + '-btn-shape');
+                if (shapeBtn) shapeBtn.classList.add('active');
+
+                console.log(`🔄 Switched overlay to ${shape.toUpperCase()} shape`);
+            }
+
+            updateSliderFromValue(param, value) {
+                const slider = document.getElementById(param);
+                const display = document.getElementById(param + '-value');
+
+                if (slider) {
+                    slider.value = value;
+                    if (display) {
+                        if (param === 'gridDensity' || param === 'moireScale') {
+                            display.textContent = Math.floor(value);
+                        } else if (param === 'lineThickness') {
+                            display.textContent = value.toFixed(3);
+                        } else {
+                            display.textContent = value.toFixed(2);
+                        }
+                    }
+                }
+            }
+
+            getFinalParameters() {
+                const params = { ...this.baseParameters };
+
+                if (this.audioEnabled) {
+                    params.rot4dXW += this.audioModulation.bassRotations.xw;
+                    params.rot4dYW += this.audioModulation.bassRotations.yw;
+                    params.rot4dZW += this.audioModulation.midsRotations.zw;
+                    params.rot4dXY += this.audioModulation.midsRotations.xy;
+
+                    if (this.audioModulation.highRotations) {
+                        params.rot4dXZ += this.audioModulation.highRotations.xz;
+                        params.rot4dYZ += this.audioModulation.highRotations.yz;
+                    }
+
+                    params.hue = (params.hue + this.audioModulation.hueShift) % 360;
+                    params.gridDensity += this.audioModulation.densityMod;
+                    params.saturation = Math.max(0, Math.min(1, this.audioModulation.saturationMod));
+                    params.lineThickness += this.audioModulation.lineThicknessMod;
+                    params.glitchIntensity += this.audioModulation.glitchMod;
+                    params.moireScale = Math.max(5, params.moireScale + this.audioModulation.densityMod);
+                }
+
+                return params;
+            }
+
+            createShaderProgram() {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `);
+
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, `
+                    precision highp float;
+
+                    uniform float u_time;
+                    uniform vec2 u_resolution;
+                    uniform float u_rot4dXW, u_rot4dYW, u_rot4dZW;
+                    uniform float u_rot4dXY, u_rot4dXZ, u_rot4dYZ;
+                    uniform float u_gridDensity, u_chaos, u_speed;
+                    uniform float u_intensity, u_scale, u_morphFactor;
+                    uniform float u_saturation, u_hue;
+                    uniform float u_glitchIntensity, u_moireScale, u_lineThickness;
+                    uniform float u_overlayIntensity, u_currentOverlayShape;
+
+                    // 4D rotation matrices
+                    mat4 rotateXW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                    }
+
+                    mat4 rotateYW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                    }
+
+                    mat4 rotateZW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                    }
+
+                    mat4 rotateXY(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    }
+
+                    mat4 rotateXZ(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
+                    }
+
+                    mat4 rotateYZ(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
+                    }
+
+                    vec4 rotate4D(vec4 pos, float xw, float yw, float zw, float xy, float xz, float yz) {
+                        mat4 transform = rotateXW(xw) * rotateYW(yw) * rotateZW(zw) *
+                                       rotateXY(xy) * rotateXZ(xz) * rotateYZ(yz);
+                        return transform * pos;
+                    }
+
+                    vec3 project4Dto3D(vec4 pos4d, float distance) {
+                        float w = pos4d.w + distance;
+                        if (abs(w) < 0.001) w = 0.001;
+                        return pos4d.xyz / w;
+                    }
+
+                    // HYPERCUBE OVERLAY SHAPES
+                    float hypertetrahedronSDF(vec4 p) {
+                        vec4 v0 = vec4(1, 1, 1, -1) * 0.3;
+                        vec4 v1 = vec4(1, -1, -1, -1) * 0.3;
+                        vec4 v2 = vec4(-1, 1, -1, -1) * 0.3;
+                        vec4 v3 = vec4(-1, -1, 1, -1) * 0.3;
+                        vec4 v4 = vec4(0, 0, 0, sqrt(5.0) - 1.0) * 0.3;
+
+                        float d1 = length(p - v0);
+                        float d2 = length(p - v1);
+                        float d3 = length(p - v2);
+                        float d4 = length(p - v3);
+                        float d5 = length(p - v4);
+
+                        return min(min(min(d1, d2), min(d3, d4)), d5) - 0.08;
+                    }
+
+                    float hypercubeSDF(vec4 p) {
+                        vec4 d = abs(p) - vec4(0.4);
+                        float insideDistance = min(max(d.x, max(d.y, max(d.z, d.w))), 0.0);
+                        float outsideDistance = length(max(d, 0.0));
+                        return insideDistance + outsideDistance;
+                    }
+
+                    float hypersphereSDF(vec4 p) {
+                        return length(p) - 0.4;
+                    }
+
+                    float hypertorusSDF(vec4 p) {
+                        vec2 q = vec2(length(p.xy) - 0.25, p.z);
+                        vec2 r = vec2(length(q) - 0.15, p.w);
+                        return length(r) - 0.08;
+                    }
+
+                    float kleinBottleSDF(vec4 p) {
+                        float a = 1.5;
+                        float r = length(p.xy);
+                        float theta = atan(p.y, p.x);
+                        float phi = atan(p.w, p.z);
+
+                        vec4 klein;
+                        klein.x = (a + cos(theta/2.0) * sin(phi) - sin(theta/2.0) * sin(2.0*phi)) * cos(theta);
+                        klein.y = (a + cos(theta/2.0) * sin(phi) - sin(theta/2.0) * sin(2.0*phi)) * sin(theta);
+                        klein.z = sin(theta/2.0) * sin(phi) + cos(theta/2.0) * sin(2.0*phi);
+                        klein.w = cos(phi);
+
+                        return length(p - klein * 0.25) - 0.08;
+                    }
+
+                    // MOIRÉ GLITCH EFFECT
+                    vec3 applyMoireGlitch(vec3 color, vec2 uv, float intensity) {
+                        float moire1 = sin(uv.x * u_moireScale) * sin(uv.y * u_moireScale);
+                        float moire2 = cos(uv.x * u_moireScale * 1.3) * cos(uv.y * u_moireScale * 1.7);
+                        float moire3 = sin((uv.x + uv.y) * u_moireScale * 2.1);
+
+                        float moirePattern = (moire1 + moire2 + moire3) * 0.33;
+
+                        float glitch = intensity * (0.5 + 0.5 * sin(u_time * 6.0 + uv.y * 8.0));
+
+                        vec3 glitchedColor;
+                        glitchedColor.r = color.r + moirePattern * glitch * 0.3;
+                        glitchedColor.g = color.g + moirePattern * glitch * 0.2;
+                        glitchedColor.b = color.b - moirePattern * glitch * 0.1;
+
+                        float scanline = sin(uv.y * 200.0) * 0.02 * intensity;
+                        glitchedColor += scanline;
+
+                        return glitchedColor;
+                    }
+
+                    vec3 hueShift(vec3 color, float hue) {
+                        float angle = radians(hue);
+                        float cosA = cos(angle);
+                        float sinA = sin(angle);
+                        mat3 hueMatrix = mat3(
+                            cosA + (1.0 - cosA) * 0.213, (1.0 - cosA) * 0.715 - sinA * 0.072, (1.0 - cosA) * 0.072 + sinA * 0.213,
+                            (1.0 - cosA) * 0.213 + sinA * 0.143, cosA + (1.0 - cosA) * 0.715, (1.0 - cosA) * 0.072 - sinA * 0.283,
+                            (1.0 - cosA) * 0.213 - sinA * 0.072, (1.0 - cosA) * 0.715 + sinA * 0.140, cosA + (1.0 - cosA) * 0.072
+                        );
+                        return hueMatrix * color;
+                    }
+
+                    void main() {
+                        vec2 screenCoord = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+                        screenCoord.x *= u_resolution.x / u_resolution.y;
+
+                        vec3 currentPos = vec3(screenCoord * u_scale, 0.0);
+
+                        // === BASE 5-LAYER LATTICE SYSTEM ===
+                        vec4 pos4d_1 = vec4(currentPos, u_time * u_speed * 0.1);
+                        pos4d_1 = rotate4D(pos4d_1, u_rot4dXW, u_rot4dYW, u_rot4dZW, u_rot4dXY, u_rot4dXZ, u_rot4dYZ);
+                        vec3 lattice3d_1 = project4Dto3D(pos4d_1, 2.0 + sin(u_time * 0.1));
+                        float spacing1 = u_scale * (1.0 + 0.3 * sin(u_rot4dXW + u_time * 0.05));
+                        vec3 grid1 = mod(lattice3d_1, spacing1) - spacing1 * 0.5;
+                        float thickness1 = (0.01 + u_gridDensity * 0.002) * u_scale;
+                        float lattice1 = length(max(abs(grid1) - vec3(thickness1), 0.0));
+
+                        vec4 pos4d_2 = vec4(currentPos, u_time * u_speed * 0.15 + 1.57);
+                        pos4d_2 = rotate4D(pos4d_2, u_rot4dXW + 0.5, u_rot4dYW + 0.3, u_rot4dZW + 0.7,
+                                          u_rot4dXY + 0.2, u_rot4dXZ + 0.8, u_rot4dYZ + 0.4);
+                        vec3 lattice3d_2 = project4Dto3D(pos4d_2, 1.5 + cos(u_time * 0.08));
+                        float spacing2 = u_scale * (0.8 + 0.2 * cos(u_rot4dYW + u_time * 0.07));
+                        vec3 grid2 = mod(lattice3d_2, spacing2) - spacing2 * 0.5;
+                        float thickness2 = (0.008 + u_gridDensity * 0.0018) * u_scale;
+                        float lattice2 = length(max(abs(grid2) - vec3(thickness2), 0.0));
+
+                        vec4 pos4d_3 = vec4(currentPos, u_time * u_speed * 0.08 + 3.14);
+                        pos4d_3 = rotate4D(pos4d_3, u_rot4dXW + 1.0, u_rot4dYW + 0.6, u_rot4dZW + 0.2,
+                                          u_rot4dXY + 1.2, u_rot4dXZ + 0.4, u_rot4dYZ + 0.9);
+                        vec3 lattice3d_3 = project4Dto3D(pos4d_3, 3.0 + sin(u_time * 0.06) * 0.5);
+                        float spacing3 = u_scale * (1.2 + 0.4 * sin(u_rot4dZW + u_time * 0.04));
+                        vec3 grid3 = mod(lattice3d_3, spacing3) - spacing3 * 0.5;
+                        float thickness3 = (0.005 + u_gridDensity * 0.0025) * u_scale;
+                        float lattice3 = length(max(abs(grid3) - vec3(thickness3), 0.0));
+
+                        vec4 pos4d_4 = vec4(currentPos, u_time * u_speed * 0.12 + 4.71);
+                        pos4d_4 = rotate4D(pos4d_4, u_rot4dXW + 1.5, u_rot4dYW + 0.9, u_rot4dZW + 0.4,
+                                          u_rot4dXY + 0.7, u_rot4dXZ + 1.1, u_rot4dYZ + 0.3);
+                        vec3 lattice3d_4 = project4Dto3D(pos4d_4, 2.5 + cos(u_time * 0.09) * 0.3);
+                        float spacing4 = u_scale * (0.9 + 0.3 * cos(u_rot4dXY + u_time * 0.06));
+                        vec3 grid4 = mod(lattice3d_4, spacing4) - spacing4 * 0.5;
+                        float thickness4 = (0.003 + u_gridDensity * 0.003) * u_scale;
+                        float lattice4 = length(max(abs(grid4) - vec3(thickness4), 0.0));
+
+                        vec4 pos4d_5 = vec4(currentPos, u_time * u_speed * 0.18 + 6.28);
+                        pos4d_5 = rotate4D(pos4d_5, u_rot4dXW + 2.0, u_rot4dYW + 1.2, u_rot4dZW + 0.8,
+                                          u_rot4dXY + 1.6, u_rot4dXZ + 0.5, u_rot4dYZ + 1.4);
+                        vec3 lattice3d_5 = project4Dto3D(pos4d_5, 1.8 + sin(u_time * 0.11) * 0.4);
+                        float spacing5 = u_scale * (1.4 + 0.5 * sin(u_rot4dXZ + u_time * 0.03));
+                        vec3 grid5 = mod(lattice3d_5, spacing5) - spacing5 * 0.5;
+                        float thickness5 = (0.006 + u_gridDensity * 0.0035) * u_scale;
+                        float lattice5 = length(max(abs(grid5) - vec3(thickness5), 0.0));
+
+                        // EMERGENT MOIRE INTERFERENCE
+                        float moire1 = sin(lattice3d_1.x * 20.0 / spacing1) * sin(lattice3d_2.x * 18.0 / spacing2);
+                        float moire2 = cos(lattice3d_3.y * 22.0 / spacing3) * cos(lattice3d_4.y * 16.0 / spacing4);
+                        float moire3 = sin(lattice3d_5.z * 24.0 / spacing5) * sin(lattice3d_1.z * 19.0 / spacing1);
+
+                        lattice1 -= moire1 * u_chaos * 0.15;
+                        lattice2 -= moire2 * u_chaos * 0.12;
+                        lattice3 -= moire3 * u_chaos * 0.18;
+                        lattice4 -= moire1 * u_chaos * 0.14;
+                        lattice5 -= moire2 * u_chaos * 0.16;
+
+                        // 5-LAYER BASE COLORS (keep original system)
+                        vec3 layer1Color = vec3(0.3, 0.7, 1.0);      // Bright blue
+                        vec3 layer2Color = vec3(1.0, 0.5, 0.2);      // Warm orange
+                        vec3 layer3Color = vec3(0.8, 0.9, 0.3);      // Yellow-green
+                        vec3 layer4Color = vec3(0.9, 0.2, 0.7);      // Magenta
+                        vec3 layer5Color = vec3(0.4, 0.9, 0.9);      // Cyan
+                        vec3 fieldColor = vec3(0.05, 0.1, 0.2);      // Background
+
+                        vec3 finalColor = fieldColor;
+                        float threshold = 0.15 * u_scale;
+
+                        // Render base lattice layers
+                        if (lattice1 < threshold) {
+                            float strength = 1.0 - (lattice1 / threshold);
+                            finalColor = mix(finalColor, layer1Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice2 < threshold) {
+                            float strength = 1.0 - (lattice2 / threshold);
+                            finalColor = mix(finalColor, layer2Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice3 < threshold) {
+                            float strength = 1.0 - (lattice3 / threshold);
+                            finalColor = mix(finalColor, layer3Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice4 < threshold) {
+                            float strength = 1.0 - (lattice4 / threshold);
+                            finalColor = mix(finalColor, layer4Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice5 < threshold) {
+                            float strength = 1.0 - (lattice5 / threshold);
+                            finalColor = mix(finalColor, layer5Color, strength * u_intensity * 2.0);
+                        }
+
+                        // Layer intersections
+                        vec3 intersectionColor = vec3(1.0, 1.0, 1.0);
+                        float intersections = 0.0;
+                        if (lattice1 < threshold && lattice2 < threshold) intersections += 0.3;
+                        if (lattice1 < threshold && lattice3 < threshold) intersections += 0.3;
+                        if (lattice2 < threshold && lattice4 < threshold) intersections += 0.3;
+                        if (lattice3 < threshold && lattice5 < threshold) intersections += 0.3;
+                        if (lattice4 < threshold && lattice5 < threshold) intersections += 0.3;
+
+                        if (intersections > 0.0) {
+                            finalColor = mix(finalColor, intersectionColor, intersections * u_intensity);
+                        }
+
+                        // === HYPERCUBE OVERLAY SYSTEM ===
+                        if (u_currentOverlayShape > 0.5) {
+                            vec4 overlayPos = vec4(currentPos, u_time * u_speed * 0.2);
+                            overlayPos = rotate4D(overlayPos, u_rot4dXW * 1.5, u_rot4dYW * 1.5, u_rot4dZW * 1.5,
+                                                u_rot4dXY * 1.5, u_rot4dXZ * 1.5, u_rot4dYZ * 1.5);
+
+                            float overlaySDF = 1e10;
+                            vec3 overlayColor = vec3(1.0, 0.2, 0.8); // Default hot pink
+
+                            float shapeSelect = mod(u_currentOverlayShape, 6.0);
+
+                            if (shapeSelect < 1.5) {
+                                // Hypertetrahedron
+                                overlaySDF = hypertetrahedronSDF(overlayPos);
+                                overlayColor = vec3(1.0, 0.2, 0.8); // Hot magenta
+                            } else if (shapeSelect < 2.5) {
+                                // Hypercube
+                                overlaySDF = hypercubeSDF(overlayPos);
+                                overlayColor = vec3(0.2, 0.9, 1.0); // Electric cyan
+                            } else if (shapeSelect < 3.5) {
+                                // Hypersphere
+                                overlaySDF = hypersphereSDF(overlayPos);
+                                overlayColor = vec3(1.0, 0.9, 0.2); // Golden yellow
+                            } else if (shapeSelect < 4.5) {
+                                // Hypertorus
+                                overlaySDF = hypertorusSDF(overlayPos);
+                                overlayColor = vec3(0.6, 0.2, 1.0); // Violet purple
+                            } else if (shapeSelect < 5.5) {
+                                // Klein bottle
+                                overlaySDF = kleinBottleSDF(overlayPos);
+                                overlayColor = vec3(0.5, 1.0, 0.2); // Lime green
+                            }
+
+                            // Render overlay shape with enhanced line thickness
+                            float overlayThickness = u_lineThickness * (1.0 + sin(u_time * 3.0) * 0.4) * 8.0;
+                            if (abs(overlaySDF) < overlayThickness) {
+                                float edge = 1.0 - smoothstep(0.0, overlayThickness, abs(overlaySDF));
+                                finalColor = mix(finalColor, overlayColor, edge * u_overlayIntensity * 1.5);
+                            }
+                        }
+
+                        // Apply moiré glitch effect
+                        finalColor = applyMoireGlitch(finalColor, screenCoord, u_glitchIntensity);
+
+                        // Apply hue shift and saturation
+                        finalColor = hueShift(finalColor, u_hue);
+                        vec3 grayscale = vec3(dot(finalColor, vec3(0.299, 0.587, 0.114)));
+                        finalColor = mix(grayscale, finalColor, u_saturation);
+
+                        // Final intensity boost
+                        finalColor *= (0.5 + u_intensity * 2.0);
+
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `);
+
+                this.program = this.createProgram(vertexShader, fragmentShader);
+                this.getUniformLocations();
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
+                    this.gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+
+            createProgram(vertexShader, fragmentShader) {
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking error:', this.gl.getProgramInfoLog(program));
+                    this.gl.deleteProgram(program);
+                    return null;
+                }
+                return program;
+            }
+
+            getUniformLocations() {
+                this.uniforms = {
+                    u_time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    u_resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    u_rot4dXW: this.gl.getUniformLocation(this.program, 'u_rot4dXW'),
+                    u_rot4dYW: this.gl.getUniformLocation(this.program, 'u_rot4dYW'),
+                    u_rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
+                    u_rot4dXY: this.gl.getUniformLocation(this.program, 'u_rot4dXY'),
+                    u_rot4dXZ: this.gl.getUniformLocation(this.program, 'u_rot4dXZ'),
+                    u_rot4dYZ: this.gl.getUniformLocation(this.program, 'u_rot4dYZ'),
+                    u_gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    u_chaos: this.gl.getUniformLocation(this.program, 'u_chaos'),
+                    u_speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    u_intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
+                    u_scale: this.gl.getUniformLocation(this.program, 'u_scale'),
+                    u_morphFactor: this.gl.getUniformLocation(this.program, 'u_morphFactor'),
+                    u_saturation: this.gl.getUniformLocation(this.program, 'u_saturation'),
+                    u_hue: this.gl.getUniformLocation(this.program, 'u_hue'),
+                    u_glitchIntensity: this.gl.getUniformLocation(this.program, 'u_glitchIntensity'),
+                    u_moireScale: this.gl.getUniformLocation(this.program, 'u_moireScale'),
+                    u_lineThickness: this.gl.getUniformLocation(this.program, 'u_lineThickness'),
+                    u_overlayIntensity: this.gl.getUniformLocation(this.program, 'u_overlayIntensity'),
+                    u_currentOverlayShape: this.gl.getUniformLocation(this.program, 'u_currentOverlayShape')
+                };
+            }
+
+            setupBuffers() {
+                const vertices = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
+
+                this.vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            render() {
+                this.time += 0.016;
+
+                this.updateAudioReactivity();
+
+                const params = this.getFinalParameters();
+
+                const overlayShapeMap = {
+                    'none': 0,
+                    'tetrahedron': 1,
+                    'hypercube': 2,
+                    'hypersphere': 3,
+                    'torus': 4,
+                    'klein': 5
+                };
+
+                this.gl.useProgram(this.program);
+
+                this.gl.uniform1f(this.uniforms.u_time, this.time);
+                this.gl.uniform2f(this.uniforms.u_resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.u_rot4dXW, params.rot4dXW);
+                this.gl.uniform1f(this.uniforms.u_rot4dYW, params.rot4dYW);
+                this.gl.uniform1f(this.uniforms.u_rot4dZW, params.rot4dZW);
+                this.gl.uniform1f(this.uniforms.u_rot4dXY, params.rot4dXY);
+                this.gl.uniform1f(this.uniforms.u_rot4dXZ, params.rot4dXZ);
+                this.gl.uniform1f(this.uniforms.u_rot4dYZ, params.rot4dYZ);
+                this.gl.uniform1f(this.uniforms.u_gridDensity, params.gridDensity);
+                this.gl.uniform1f(this.uniforms.u_chaos, params.chaos);
+                this.gl.uniform1f(this.uniforms.u_speed, params.speed);
+                this.gl.uniform1f(this.uniforms.u_intensity, params.intensity);
+                this.gl.uniform1f(this.uniforms.u_scale, params.scale);
+                this.gl.uniform1f(this.uniforms.u_morphFactor, params.morphFactor);
+                this.gl.uniform1f(this.uniforms.u_saturation, params.saturation);
+                this.gl.uniform1f(this.uniforms.u_hue, params.hue);
+                this.gl.uniform1f(this.uniforms.u_glitchIntensity, params.glitchIntensity);
+                this.gl.uniform1f(this.uniforms.u_moireScale, params.moireScale);
+                this.gl.uniform1f(this.uniforms.u_lineThickness, params.lineThickness);
+                this.gl.uniform1f(this.uniforms.u_overlayIntensity, params.overlayIntensity);
+                this.gl.uniform1f(this.uniforms.u_currentOverlayShape, overlayShapeMap[this.currentOverlayShape] || 0);
+
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // Initialize system
+        const canvas = document.getElementById('canvas');
+        const latticeHypercube = new LatticeHypercubeSystem(canvas);
+
+        // UI Functions
+        window.toggleMenu = function() {
+            const controls = document.getElementById('controls');
+            controls.classList.toggle('open');
+        };
+
+        window.switchSystem = function(system) {
+            document.querySelectorAll('.system-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(system + '-btn').classList.add('active');
+
+            latticeHypercube.currentSystem = system;
+            console.log(`🔄 Switched to ${system.toUpperCase()} system`);
+        };
+
+        window.switchOverlayShape = function(shape) {
+            latticeHypercube.switchOverlayShape(shape);
+        };
+
+        window.toggleAudio = async function() {
+            if (!latticeHypercube.audioEnabled) {
+                await latticeHypercube.initAudio();
+            } else {
+                latticeHypercube.audioEnabled = false;
+                document.getElementById('audio-btn').textContent = '🎵 START';
+                document.getElementById('audio-btn').classList.remove('active');
+            }
+        };
+
+        window.toggleGyro = async function() {
+            if (!latticeHypercube.gyroEnabled) {
+                await latticeHypercube.initGyroscope();
+            } else {
+                latticeHypercube.gyroEnabled = false;
+                document.getElementById('gyro-btn').textContent = '📱 GYRO';
+                document.getElementById('gyro-btn').classList.remove('active');
+            }
+        };
+
+        // Parameter control binding
+        function updateParameter(name, value) {
+            latticeHypercube.baseParameters[name] = parseFloat(value);
+            const display = document.getElementById(name + '-value');
+            if (display) {
+                if (name === 'gridDensity' || name === 'moireScale') {
+                    display.textContent = Math.floor(value);
+                } else if (name === 'lineThickness') {
+                    display.textContent = parseFloat(value).toFixed(3);
+                } else {
+                    display.textContent = parseFloat(value).toFixed(2);
+                }
+            }
+        }
+
+        // Bind all controls
+        Object.keys(latticeHypercube.baseParameters).forEach(param => {
+            const control = document.getElementById(param);
+            if (control) {
+                control.addEventListener('input', (e) => {
+                    updateParameter(param, e.target.value);
+                });
+                updateParameter(param, control.value);
+            }
+        });
+
+        // Audio sensitivity control
+        document.getElementById('audioSensitivity').addEventListener('input', (e) => {
+            latticeHypercube.audioSensitivity = parseFloat(e.target.value);
+            document.getElementById('audioSensitivity-value').textContent = latticeHypercube.audioSensitivity.toFixed(1);
+        });
+
+        // Animation loop
+        function animate() {
+            latticeHypercube.render();
+            requestAnimationFrame(animate);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            latticeHypercube.resize();
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
