@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISMATIC System Debug Test</title>
+    <style>
+        body { background: #000; color: #fff; font-family: monospace; }
+        canvas { border: 1px solid #555; margin: 5px; }
+        .log { height: 200px; overflow-y: scroll; background: #111; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔮 PRISMATIC System Debug Test</h1>
+
+    <!-- PRISMATIC 5-Layer Canvas System -->
+    <div id="prismaticLayers">
+        <canvas id="prismatic-background-canvas" width="300" height="200"></canvas>
+        <canvas id="prismatic-shadow-canvas" width="300" height="200"></canvas>
+        <canvas id="prismatic-content-canvas" width="300" height="200"></canvas>
+        <canvas id="prismatic-highlight-canvas" width="300" height="200"></canvas>
+        <canvas id="prismatic-accent-canvas" width="300" height="200"></canvas>
+    </div>
+
+    <button onclick="testPrismatic()">Test PRISMATIC System</button>
+    <button onclick="testShaderCompilation()">Test Shader Compilation</button>
+
+    <div class="log" id="log"></div>
+
+    <script type="module">
+        import { PrismaticSystem } from './src/systems/prismatic/PrismaticSystem.js';
+
+        let prismaticSystem;
+        const log = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff6666' : type === 'success' ? '#66ff66' : '#66ccff';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+
+        window.testPrismatic = async function() {
+            addLog('🔮 Starting PRISMATIC system test...');
+
+            try {
+                prismaticSystem = new PrismaticSystem();
+                addLog('✅ PrismaticSystem constructor succeeded', 'success');
+
+                const initialized = await prismaticSystem.initialize();
+                addLog(`🔮 Initialize result: ${initialized}`, initialized ? 'success' : 'error');
+
+                if (initialized) {
+                    const activated = await prismaticSystem.activate();
+                    addLog(`🔮 Activate result: ${activated}`, activated ? 'success' : 'error');
+
+                    if (activated) {
+                        addLog('🎉 PRISMATIC system fully operational!', 'success');
+
+                        // Test parameter updates
+                        prismaticSystem.updateParameter('hue', 240);
+                        prismaticSystem.updateParameter('intensity', 0.8);
+                        addLog('🔮 Parameter updates sent', 'success');
+                    }
+                }
+            } catch (error) {
+                addLog(`❌ PRISMATIC test failed: ${error.message}`, 'error');
+                console.error('PRISMATIC error:', error);
+            }
+        };
+
+        window.testShaderCompilation = function() {
+            addLog('🔧 Testing shader compilation manually...');
+
+            try {
+                const canvas = document.getElementById('prismatic-content-canvas');
+                const gl = canvas.getContext('webgl2');
+
+                if (!gl) {
+                    addLog('❌ WebGL2 not available', 'error');
+                    return;
+                }
+
+                addLog('✅ WebGL2 context created', 'success');
+
+                // Test basic shader compilation
+                const vertexShaderSource = `#version 300 es
+                    in vec4 a_position;
+                    void main() {
+                        gl_Position = a_position;
+                    }`;
+
+                const fragmentShaderSource = `#version 300 es
+                    precision highp float;
+                    out vec4 fragColor;
+                    void main() {
+                        fragColor = vec4(1.0, 0.0, 1.0, 1.0);
+                    }`;
+
+                const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertexShader, vertexShaderSource);
+                gl.compileShader(vertexShader);
+
+                if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+                    addLog(`❌ Vertex shader error: ${gl.getShaderInfoLog(vertexShader)}`, 'error');
+                    return;
+                }
+                addLog('✅ Basic vertex shader compiled', 'success');
+
+                const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragmentShader, fragmentShaderSource);
+                gl.compileShader(fragmentShader);
+
+                if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+                    addLog(`❌ Fragment shader error: ${gl.getShaderInfoLog(fragmentShader)}`, 'error');
+                    return;
+                }
+                addLog('✅ Basic fragment shader compiled', 'success');
+
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    addLog(`❌ Program link error: ${gl.getProgramInfoLog(program)}`, 'error');
+                    return;
+                }
+                addLog('✅ Basic shader program linked successfully', 'success');
+
+            } catch (error) {
+                addLog(`❌ Shader test failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Auto-run basic test
+        addLog('🚀 Ready for PRISMATIC system testing');
+    </script>
+</body>
+</html>

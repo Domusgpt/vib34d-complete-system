@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D Shader Engines - AETHERIC & PRISMATIC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .system-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sys-btn {
+            padding: 8px 12px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .sys-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+        }
+
+        .sys-btn.active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #00ffff;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+            border-radius: 2px;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .control-group .value {
+            font-size: 11px;
+            color: #aaa;
+            text-align: right;
+        }
+
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #00ffff;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <div class="system-buttons">
+            <button class="sys-btn active" data-system="AETHERIC">Aetheric</button>
+            <button class="sys-btn" data-system="PRISMATIC">Prismatic</button>
+        </div>
+
+        <div class="control-group">
+            <label>X-W Rotation</label>
+            <input type="range" id="rotXW" min="-6.28" max="6.28" step="0.01" value="0">
+            <div class="value" id="rotXW-value">0.00</div>
+        </div>
+
+        <div class="control-group">
+            <label>Y-W Rotation</label>
+            <input type="range" id="rotYW" min="-6.28" max="6.28" step="0.01" value="0">
+            <div class="value" id="rotYW-value">0.00</div>
+        </div>
+
+        <div class="control-group">
+            <label>Z-W Rotation</label>
+            <input type="range" id="rotZW" min="-6.28" max="6.28" step="0.01" value="0">
+            <div class="value" id="rotZW-value">0.00</div>
+        </div>
+
+        <div class="control-group">
+            <label>Grid Density</label>
+            <input type="range" id="gridDensity" min="1" max="64" step="1" value="15">
+            <div class="value" id="gridDensity-value">15</div>
+        </div>
+
+        <div class="control-group">
+            <label>Morph Factor</label>
+            <input type="range" id="morphFactor" min="0" max="2" step="0.01" value="0.5">
+            <div class="value" id="morphFactor-value">0.50</div>
+        </div>
+
+        <div class="control-group">
+            <label>Chaos</label>
+            <input type="range" id="chaos" min="0" max="1" step="0.01" value="0.2">
+            <div class="value" id="chaos-value">0.20</div>
+        </div>
+
+        <div class="control-group">
+            <label>Speed</label>
+            <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1">
+            <div class="value" id="speed-value">1.0</div>
+        </div>
+
+        <div class="control-group">
+            <label>Hue</label>
+            <input type="range" id="hue" min="0" max="360" step="1" value="200">
+            <div class="value" id="hue-value">200</div>
+        </div>
+
+        <div class="control-group">
+            <label>Intensity</label>
+            <input type="range" id="intensity" min="0" max="1.5" step="0.01" value="0.9">
+            <div class="value" id="intensity-value">0.90</div>
+        </div>
+
+        <div class="control-group">
+            <label>Saturation</label>
+            <input type="range" id="saturation" min="0" max="1" step="0.01" value="0.6">
+            <div class="value" id="saturation-value">0.60</div>
+        </div>
+
+        <div class="control-group">
+            <label>Scale</label>
+            <input type="range" id="scale" min="0.25" max="2" step="0.01" value="1">
+            <div class="value" id="scale-value">1.00</div>
+        </div>
+    </div>
+
+    <div class="info">
+        <strong>VIB34D Shader Engines 2025</strong><br>
+        AETHERIC: Screen-space interference + 4D shadows<br>
+        PRISMATIC: Chromatic dispersion SDF glass<br>
+        System: <span id="current-system">AETHERIC</span>
+    </div>
+
+    <script type="module">
+        import createAethericSystem from './src/systems/aetheric/aetheric.js';
+        import createPrismaticSystem from './src/systems/prismatic/prismatic.js';
+
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl2');
+
+        if (!gl) {
+            alert('WebGL2 not supported');
+            throw new Error('WebGL2 not supported');
+        }
+
+        // Systems
+        const systems = {
+            AETHERIC: createAethericSystem(),
+            PRISMATIC: createPrismaticSystem()
+        };
+
+        let currentSystem = 'AETHERIC';
+        let startTime = Date.now();
+
+        // State
+        const state = {
+            time: 0,
+            params: {
+                rotXW: 0,
+                rotYW: 0,
+                rotZW: 0,
+                gridDensity: 15,
+                morphFactor: 0.5,
+                chaos: 0.2,
+                speed: 1,
+                hue: 200,
+                intensity: 0.9,
+                saturation: 0.6,
+                scale: 1.0
+            }
+        };
+
+        // Initialize systems
+        for (const system of Object.values(systems)) {
+            system.init(gl);
+        }
+
+        // Resize canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+
+            for (const system of Object.values(systems)) {
+                system.resize(gl, canvas.width, canvas.height);
+            }
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Controls
+        const controls = document.querySelectorAll('input[type="range"]');
+        controls.forEach(control => {
+            const valueDisplay = document.getElementById(control.id + '-value');
+
+            control.addEventListener('input', () => {
+                const value = parseFloat(control.value);
+                state.params[control.id] = value;
+                valueDisplay.textContent = value.toFixed(2);
+            });
+        });
+
+        // System switching
+        const systemButtons = document.querySelectorAll('.sys-btn');
+        systemButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                systemButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSystem = btn.dataset.system;
+                document.getElementById('current-system').textContent = currentSystem;
+            });
+        });
+
+        // Render loop
+        function render() {
+            state.time = (Date.now() - startTime) * 0.001;
+
+            gl.clearColor(0, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            systems[currentSystem].draw(gl, state, 0.016);
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIB34D Advanced Shader Engines - AETHERIC & PRISMATIC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        /* 5-Layer Canvas Architecture */
+        .layer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+        }
+
+        .layer-container.active {
+            display: block;
+        }
+
+        .layer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Layer-specific blend modes for sophisticated visual hierarchy */
+        .background-canvas { z-index: 1; mix-blend-mode: normal; }
+        .shadow-canvas { z-index: 2; mix-blend-mode: multiply; }
+        .content-canvas { z-index: 3; mix-blend-mode: normal; }
+        .highlight-canvas { z-index: 4; mix-blend-mode: screen; }
+        .accent-canvas { z-index: 5; mix-blend-mode: overlay; }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            max-width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .system-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .sys-btn {
+            padding: 10px 15px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .sys-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .sys-btn.active {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+        }
+
+        .geometry-selector {
+            margin-bottom: 20px;
+        }
+
+        .geometry-selector select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 50, 50, 0.8);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 30, 30, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #66cccc;
+            text-transform: uppercase;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .control-group .value {
+            font-size: 10px;
+            color: #99dddd;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .advanced-toggle {
+            background: rgba(255, 100, 0, 0.2);
+            border: 1px solid #ff6600;
+            color: #ff6600;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .advanced-toggle:hover {
+            background: rgba(255, 100, 0, 0.4);
+        }
+
+        .advanced-controls {
+            display: none;
+        }
+
+        .advanced-controls.show {
+            display: block;
+        }
+
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            backdrop-filter: blur(15px);
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .performance-monitor {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            font-size: 11px;
+            z-index: 1000;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <!-- AETHERIC 5-Layer Canvas System -->
+    <div id="aethericLayers" class="layer-container active">
+        <canvas id="aetheric-background-canvas" class="layer-canvas background-canvas"></canvas>
+        <canvas id="aetheric-shadow-canvas" class="layer-canvas shadow-canvas"></canvas>
+        <canvas id="aetheric-content-canvas" class="layer-canvas content-canvas"></canvas>
+        <canvas id="aetheric-highlight-canvas" class="layer-canvas highlight-canvas"></canvas>
+        <canvas id="aetheric-accent-canvas" class="layer-canvas accent-canvas"></canvas>
+    </div>
+
+    <!-- PRISMATIC 5-Layer Canvas System -->
+    <div id="prismaticLayers" class="layer-container">
+        <canvas id="prismatic-background-canvas" class="layer-canvas background-canvas"></canvas>
+        <canvas id="prismatic-shadow-canvas" class="layer-canvas shadow-canvas"></canvas>
+        <canvas id="prismatic-content-canvas" class="layer-canvas content-canvas"></canvas>
+        <canvas id="prismatic-highlight-canvas" class="layer-canvas highlight-canvas"></canvas>
+        <canvas id="prismatic-accent-canvas" class="layer-canvas accent-canvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <div class="system-buttons">
+            <button class="sys-btn active" data-system="aetheric">🌌 Aetheric</button>
+            <button class="sys-btn" data-system="prismatic">🔮 Prismatic</button>
+        </div>
+
+        <div class="geometry-selector">
+            <label class="section-title">Geometry/Polytope</label>
+            <select id="geometry">
+                <option value="0">Hypersphere</option>
+                <option value="1">Hypercube</option>
+                <option value="2">Hypertetrahedron</option>
+                <option value="3">16-Cell</option>
+                <option value="4">24-Cell</option>
+                <option value="5">Hypertorus</option>
+                <option value="6">Wave Field</option>
+                <option value="7">Crystal Lattice</option>
+                <option value="8">Fractal 4D</option>
+                <option value="9">Complex Morph</option>
+            </select>
+        </div>
+
+        <!-- 6D 4D Rotation Controls -->
+        <div class="control-section">
+            <div class="section-title">6D 4D Rotations</div>
+
+            <div class="control-group">
+                <label>X-W Rotation</label>
+                <input type="range" id="rot4dXW" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dXW-value">0.00</div>
+            </div>
+
+            <div class="control-group">
+                <label>Y-W Rotation</label>
+                <input type="range" id="rot4dYW" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dYW-value">0.00</div>
+            </div>
+
+            <div class="control-group">
+                <label>Z-W Rotation</label>
+                <input type="range" id="rot4dZW" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dZW-value">0.00</div>
+            </div>
+
+            <div class="control-group">
+                <label>X-Y Rotation</label>
+                <input type="range" id="rot4dXY" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dXY-value">0.00</div>
+            </div>
+
+            <div class="control-group">
+                <label>X-Z Rotation</label>
+                <input type="range" id="rot4dXZ" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dXZ-value">0.00</div>
+            </div>
+
+            <div class="control-group">
+                <label>Y-Z Rotation</label>
+                <input type="range" id="rot4dYZ" min="-6.28" max="6.28" step="0.01" value="0">
+                <div class="value" id="rot4dYZ-value">0.00</div>
+            </div>
+        </div>
+
+        <!-- 6D Reactivity Controls -->
+        <div class="control-section">
+            <div class="section-title">🎵 6D Reactivity System</div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="audioReactivity" checked> Audio Reactive
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="touchReactivity" checked> Touch Reactive
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="gyroReactivity" checked> Gyroscope Reactive
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="breathingPatterns" checked> Breathing Patterns
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>Audio Sensitivity</label>
+                <input type="range" id="audioSensitivity" min="0.1" max="5" step="0.1" value="1.0">
+                <div class="value" id="audioSensitivity-value">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Touch Sensitivity</label>
+                <input type="range" id="touchSensitivity" min="0.1" max="5" step="0.1" value="1.0">
+                <div class="value" id="touchSensitivity-value">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Parameter Smoothing</label>
+                <input type="range" id="parameterSmoothing" min="0.01" max="0.5" step="0.01" value="0.1">
+                <div class="value" id="parameterSmoothing-value">0.10</div>
+            </div>
+        </div>
+
+        <!-- Core Parameters -->
+        <div class="control-section">
+            <div class="section-title">Core Parameters</div>
+
+            <div class="control-group">
+                <label>Grid Density</label>
+                <input type="range" id="gridDensity" min="1" max="64" step="1" value="15">
+                <div class="value" id="gridDensity-value">15</div>
+            </div>
+
+            <div class="control-group">
+                <label>Morph Factor</label>
+                <input type="range" id="morphFactor" min="0" max="2" step="0.01" value="0.5">
+                <div class="value" id="morphFactor-value">0.50</div>
+            </div>
+
+            <div class="control-group">
+                <label>Chaos</label>
+                <input type="range" id="chaos" min="0" max="1" step="0.01" value="0.2">
+                <div class="value" id="chaos-value">0.20</div>
+            </div>
+
+            <div class="control-group">
+                <label>Speed</label>
+                <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1">
+                <div class="value" id="speed-value">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Scale</label>
+                <input type="range" id="scale" min="0.25" max="3" step="0.01" value="1">
+                <div class="value" id="scale-value">1.00</div>
+            </div>
+        </div>
+
+        <!-- Color Controls -->
+        <div class="control-section">
+            <div class="section-title">Color & Appearance</div>
+
+            <div class="control-group">
+                <label>Hue</label>
+                <input type="range" id="hue" min="0" max="360" step="1" value="200">
+                <div class="value" id="hue-value">200</div>
+            </div>
+
+            <div class="control-group">
+                <label>Intensity</label>
+                <input type="range" id="intensity" min="0" max="2" step="0.01" value="0.9">
+                <div class="value" id="intensity-value">0.90</div>
+            </div>
+
+            <div class="control-group">
+                <label>Saturation</label>
+                <input type="range" id="saturation" min="0" max="1" step="0.01" value="0.6">
+                <div class="value" id="saturation-value">0.60</div>
+            </div>
+        </div>
+
+        <!-- Advanced Controls Toggle -->
+        <div class="advanced-toggle" onclick="toggleAdvanced()">
+            🔬 Advanced Parameters
+        </div>
+
+        <!-- Advanced Parameters -->
+        <div class="advanced-controls" id="advancedControls">
+            <!-- AETHERIC Advanced Controls -->
+            <div class="control-section aetheric-advanced">
+                <div class="section-title">🌌 Aetheric Advanced</div>
+
+                <div class="control-group">
+                    <label>Coherence Length</label>
+                    <input type="range" id="coherenceLength" min="0.01" max="1" step="0.01" value="0.1">
+                    <div class="value" id="coherenceLength-value">0.10</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Dispersion Rate</label>
+                    <input type="range" id="dispersionRate" min="0" max="1" step="0.01" value="0.3">
+                    <div class="value" id="dispersionRate-value">0.30</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Field Coupling</label>
+                    <input type="range" id="fieldCoupling" min="0" max="2" step="0.01" value="0.5">
+                    <div class="value" id="fieldCoupling-value">0.50</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Dimensional Bridge</label>
+                    <input type="range" id="dimensionalBridge" min="0" max="3" step="0.01" value="1.0">
+                    <div class="value" id="dimensionalBridge-value">1.00</div>
+                </div>
+            </div>
+
+            <!-- PRISMATIC Advanced Controls -->
+            <div class="control-section prismatic-advanced">
+                <div class="section-title">🔮 Prismatic Advanced</div>
+
+                <div class="control-group">
+                    <label>Wavelength Range</label>
+                    <input type="range" id="wavelengthRange" min="100" max="500" step="10" value="300">
+                    <div class="value" id="wavelengthRange-value">300</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Cauchy Coefficient</label>
+                    <input type="range" id="cauchyCoefficient" min="0.001" max="0.1" step="0.001" value="0.01">
+                    <div class="value" id="cauchyCoefficient-value">0.010</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Subsurface Scattering</label>
+                    <input type="range" id="subsurfaceScattering" min="0" max="1" step="0.01" value="0.3">
+                    <div class="value" id="subsurfaceScattering-value">0.30</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Fresnel Power</label>
+                    <input type="range" id="fresnelPower" min="1" max="5" step="0.1" value="2.0">
+                    <div class="value" id="fresnelPower-value">2.0</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Caustic Intensity</label>
+                    <input type="range" id="causticIntensity" min="0" max="2" step="0.01" value="0.5">
+                    <div class="value" id="causticIntensity-value">0.50</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Material Density</label>
+                    <input type="range" id="materialDensity" min="0.1" max="2" step="0.01" value="0.8">
+                    <div class="value" id="materialDensity-value">0.80</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Surface Roughness</label>
+                    <input type="range" id="surfaceRoughness" min="0" max="1" step="0.01" value="0.1">
+                    <div class="value" id="surfaceRoughness-value">0.10</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Marching Steps</label>
+                    <input type="range" id="marchingSteps" min="16" max="128" step="4" value="64">
+                    <div class="value" id="marchingSteps-value">64</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info">
+        <strong>🌟 VIB34D Advanced Shader Engines 2025</strong><br>
+        <strong>Current System:</strong> <span id="current-system">AETHERIC</span><br><br>
+        <strong>🌌 AETHERIC:</strong> Hyperdimensional wave interference with 6D rotations<br>
+        <strong>🔮 PRISMATIC:</strong> Advanced chromatic dispersion with 4D polytope ray-marching<br><br>
+        <strong>Features:</strong> 5-layer architecture, sophisticated 4D mathematics, intelligent parameter feedback
+    </div>
+
+    <div class="performance-monitor">
+        <div>FPS: <span id="fps">--</span></div>
+        <div>Layers: <span id="layer-count">5</span></div>
+        <div>Active: <span id="active-system">AETHERIC</span></div>
+    </div>
+
+    <script type="module">
+        import { AethericSystem } from './src/systems/aetheric/AethericSystem.js';
+        import { PrismaticSystem } from './src/systems/prismatic/PrismaticSystem.js';
+        import { AudioReactivity6D } from './src/audio/AudioReactivity6D.js';
+        import { TouchGyroscope6D } from './src/controls/TouchGyroscope6D.js';
+        import { UnifiedReactivitySystem } from './src/controls/UnifiedReactivitySystem.js';
+
+        // Initialize all systems
+        const aethericSystem = new AethericSystem();
+        const prismaticSystem = new PrismaticSystem();
+        const audioReactivity = new AudioReactivity6D();
+        const touchGyroscope = new TouchGyroscope6D();
+        const unifiedReactivity = new UnifiedReactivitySystem();
+
+        let currentSystem = 'aetheric';
+        let activeSystem = aethericSystem;
+
+        // Performance monitoring
+        let frameCount = 0;
+        let lastTime = Date.now();
+
+        // State management
+        const state = {
+            parameters: {
+                geometry: 0,
+                rot4dXW: 0, rot4dYW: 0, rot4dZW: 0,
+                rot4dXY: 0, rot4dXZ: 0, rot4dYZ: 0,
+                gridDensity: 15,
+                morphFactor: 0.5,
+                chaos: 0.2,
+                speed: 1.0,
+                scale: 1.0,
+                hue: 200,
+                intensity: 0.9,
+                saturation: 0.6,
+                // Advanced parameters
+                coherenceLength: 0.1,
+                dispersionRate: 0.3,
+                fieldCoupling: 0.5,
+                dimensionalBridge: 1.0,
+                wavelengthRange: 300,
+                cauchyCoefficient: 0.01,
+                subsurfaceScattering: 0.3,
+                fresnelPower: 2.0,
+                causticIntensity: 0.5,
+                materialDensity: 0.8,
+                surfaceRoughness: 0.1,
+                marchingSteps: 64
+            }
+        };
+
+        // Initialize systems
+        async function initializeSystems() {
+            console.log('🚀 Initializing advanced shader systems with 6D reactivity...');
+
+            // Initialize shader systems
+            await aethericSystem.initialize();
+            await prismaticSystem.initialize();
+
+            // Initialize reactivity systems
+            await audioReactivity.initialize();
+            await touchGyroscope.initialize();
+
+            // Connect unified reactivity system
+            unifiedReactivity.initialize(audioReactivity, touchGyroscope, null);
+
+            // Set base parameters in unified system
+            unifiedReactivity.setBaseParameters(state.parameters);
+
+            // Start reactivity systems
+            audioReactivity.startListening((rotations) => {
+                // Audio rotations are handled by unified system
+            });
+
+            touchGyroscope.start((rotations) => {
+                // Touch/gyro rotations are handled by unified system
+            });
+
+            // Start unified reactivity with parameter update callback
+            unifiedReactivity.start((params) => {
+                // Update all parameters from unified system (without logging spam)
+                Object.assign(state.parameters, params);
+
+                // Update active system directly without triggering reactivity updates
+                if (activeSystem && activeSystem.updateParameter) {
+                    Object.entries(params).forEach(([name, value]) => {
+                        activeSystem.updateParameter(name, value);
+                    });
+                }
+            });
+
+            // Activate initial system
+            await aethericSystem.activate();
+
+            console.log('✅ All systems initialized with full 6D reactivity!');
+        }
+
+        // System switching
+        async function switchSystem(systemName) {
+            console.log(`🔄 Switching to ${systemName.toUpperCase()} system`);
+
+            // Deactivate current system
+            if (activeSystem) {
+                activeSystem.deactivate();
+            }
+
+            // Hide all layer containers
+            document.getElementById('aethericLayers').classList.remove('active');
+            document.getElementById('prismaticLayers').classList.remove('active');
+
+            // Switch to new system
+            currentSystem = systemName;
+
+            if (systemName === 'aetheric') {
+                activeSystem = aethericSystem;
+                document.getElementById('aethericLayers').classList.add('active');
+            } else if (systemName === 'prismatic') {
+                activeSystem = prismaticSystem;
+                document.getElementById('prismaticLayers').classList.add('active');
+            }
+
+            // Activate new system
+            await activeSystem.activate();
+
+            // Update all parameters
+            updateAllParameters();
+
+            // Update UI
+            document.getElementById('current-system').textContent = systemName.toUpperCase();
+            document.getElementById('active-system').textContent = systemName.toUpperCase();
+
+            console.log(`✅ Switched to ${systemName.toUpperCase()} system`);
+        }
+
+        // Parameter management with unified reactivity
+        function updateParameter(name, value) {
+            state.parameters[name] = value;
+
+            // Update base parameter in unified reactivity system
+            if (unifiedReactivity) {
+                unifiedReactivity.setBaseParameter(name, value);
+            }
+
+            // Also update active system directly for immediate response
+            if (activeSystem && activeSystem.updateParameter) {
+                activeSystem.updateParameter(name, value);
+            }
+        }
+
+        function updateAllParameters() {
+            // Update unified reactivity system base parameters
+            if (unifiedReactivity) {
+                unifiedReactivity.setBaseParameters(state.parameters);
+            }
+
+            // Also update active system for immediate response
+            if (activeSystem && activeSystem.updateParameter) {
+                Object.entries(state.parameters).forEach(([name, value]) => {
+                    activeSystem.updateParameter(name, value);
+                });
+            }
+        }
+
+        // UI Setup
+        function setupControls() {
+            // System buttons
+            document.querySelectorAll('.sys-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    document.querySelectorAll('.sys-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    await switchSystem(btn.dataset.system);
+                });
+            });
+
+            // Geometry selector
+            document.getElementById('geometry').addEventListener('change', (e) => {
+                updateParameter('geometry', parseInt(e.target.value));
+            });
+
+            // Range controls
+            document.querySelectorAll('input[type="range"]').forEach(control => {
+                const valueDisplay = document.getElementById(control.id + '-value');
+
+                control.addEventListener('input', () => {
+                    const value = parseFloat(control.value);
+                    updateParameter(control.id, value);
+
+                    if (valueDisplay) {
+                        if (control.step === "1") {
+                            valueDisplay.textContent = value.toString();
+                        } else {
+                            valueDisplay.textContent = value.toFixed(2);
+                        }
+                    }
+                });
+            });
+
+            // Reactivity system controls
+            setupReactivityControls();
+
+            console.log('🎮 Controls setup complete with 6D reactivity');
+        }
+
+        // Setup reactivity system controls
+        function setupReactivityControls() {
+            // Audio reactivity toggle
+            document.getElementById('audioReactivity').addEventListener('change', (e) => {
+                if (audioReactivity) {
+                    if (e.target.checked) {
+                        audioReactivity.startListening();
+                    } else {
+                        audioReactivity.stopListening();
+                    }
+                }
+            });
+
+            // Touch reactivity toggle
+            document.getElementById('touchReactivity').addEventListener('change', (e) => {
+                if (touchGyroscope) {
+                    if (e.target.checked) {
+                        touchGyroscope.start();
+                    } else {
+                        touchGyroscope.stop();
+                    }
+                }
+            });
+
+            // Gyroscope reactivity toggle
+            document.getElementById('gyroReactivity').addEventListener('change', (e) => {
+                // Gyroscope is part of touch system, enable/disable gyro specifically
+                console.log(`🎮 Gyroscope reactivity ${e.target.checked ? 'enabled' : 'disabled'}`);
+            });
+
+            // Breathing patterns toggle
+            document.getElementById('breathingPatterns').addEventListener('change', (e) => {
+                if (unifiedReactivity) {
+                    unifiedReactivity.setBreathingEnabled(e.target.checked);
+                }
+            });
+
+            // Audio sensitivity
+            document.getElementById('audioSensitivity').addEventListener('input', (e) => {
+                const sensitivity = parseFloat(e.target.value);
+                if (audioReactivity) {
+                    // Update all audio rotation sensitivities
+                    ['rot4dXW', 'rot4dYW', 'rot4dZW', 'rot4dXY', 'rot4dXZ', 'rot4dYZ'].forEach(axis => {
+                        audioReactivity.setSensitivity(axis, sensitivity);
+                    });
+                }
+                document.getElementById('audioSensitivity-value').textContent = sensitivity.toFixed(1);
+            });
+
+            // Touch sensitivity
+            document.getElementById('touchSensitivity').addEventListener('input', (e) => {
+                const sensitivity = parseFloat(e.target.value);
+                if (touchGyroscope) {
+                    // Update all touch rotation sensitivities
+                    ['rot4dXW', 'rot4dYW', 'rot4dZW', 'rot4dXY', 'rot4dXZ', 'rot4dYZ'].forEach(axis => {
+                        touchGyroscope.setSensitivity(axis, sensitivity);
+                    });
+                }
+                document.getElementById('touchSensitivity-value').textContent = sensitivity.toFixed(1);
+            });
+
+            // Parameter smoothing
+            document.getElementById('parameterSmoothing').addEventListener('input', (e) => {
+                const smoothing = parseFloat(e.target.value);
+                if (unifiedReactivity) {
+                    // Update smoothing factors for all parameter types
+                    unifiedReactivity.smoothingFactors.rotations = smoothing;
+                    unifiedReactivity.smoothingFactors.core = smoothing * 0.8;
+                    unifiedReactivity.smoothingFactors.color = smoothing * 1.2;
+                    unifiedReactivity.smoothingFactors.advanced = smoothing;
+                }
+                document.getElementById('parameterSmoothing-value').textContent = smoothing.toFixed(2);
+            });
+
+            console.log('🎵 Reactivity controls configured');
+        }
+
+        // Advanced controls toggle
+        window.toggleAdvanced = function() {
+            const advancedControls = document.getElementById('advancedControls');
+            advancedControls.classList.toggle('show');
+        };
+
+        // Performance monitoring
+        function updatePerformanceMonitor() {
+            frameCount++;
+            const currentTime = Date.now();
+
+            if (currentTime - lastTime >= 1000) {
+                const fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+                document.getElementById('fps').textContent = fps;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(updatePerformanceMonitor);
+        }
+
+        // Resize handling
+        function handleResize() {
+            if (activeSystem && activeSystem.engine && activeSystem.engine.visualizers) {
+                activeSystem.engine.visualizers.forEach(visualizer => {
+                    if (visualizer.setupCanvasSize) {
+                        visualizer.setupCanvasSize();
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+
+        // Initialize everything
+        async function init() {
+            console.log('🌟 Starting VIB34D Advanced Shader Engines...');
+
+            setupControls();
+            await initializeSystems();
+            updatePerformanceMonitor();
+
+            console.log('🎉 VIB34D Advanced Shader Engines ready!');
+        }
+
+        // Start the application
+        init().catch(error => {
+            console.error('❌ Initialization failed:', error);
+        });
+    </script>
+</body>
+</html>
