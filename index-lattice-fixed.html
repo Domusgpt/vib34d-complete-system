@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 VIB34D - FIXED 5-Layer Lattice System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000011;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #00ddff;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 30, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #0099ff;
+            max-width: 320px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 12px;
+            color: #00ddff;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #00ffff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .layer-info {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                width: calc(100vw - 40px);
+                max-width: none;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <div class="title">🔮 5-LAYER LATTICE FIXED</div>
+        <div class="layer-info">Direct 4D Lattice Rendering</div>
+
+        <div class="control-group">
+            <label>4D Rotation XW: <span id="rot4dXW-value">0</span></label>
+            <input type="range" id="rot4dXW" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>4D Rotation YW: <span id="rot4dYW-value">0</span></label>
+            <input type="range" id="rot4dYW" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>4D Rotation ZW: <span id="rot4dZW-value">0</span></label>
+            <input type="range" id="rot4dZW" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>4D Rotation XY: <span id="rot4dXY-value">0</span></label>
+            <input type="range" id="rot4dXY" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>4D Rotation XZ: <span id="rot4dXZ-value">0</span></label>
+            <input type="range" id="rot4dXZ" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>4D Rotation YZ: <span id="rot4dYZ-value">0</span></label>
+            <input type="range" id="rot4dYZ" min="-3.14159" max="3.14159" step="0.01" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Grid Density: <span id="gridDensity-value">15</span></label>
+            <input type="range" id="gridDensity" min="1" max="50" step="1" value="15">
+        </div>
+
+        <div class="control-group">
+            <label>Scale: <span id="scale-value">1.0</span></label>
+            <input type="range" id="scale" min="0.1" max="3.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label>Speed: <span id="speed-value">1.0</span></label>
+            <input type="range" id="speed" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label>Intensity: <span id="intensity-value">0.9</span></label>
+            <input type="range" id="intensity" min="0.1" max="2.0" step="0.1" value="0.9">
+        </div>
+
+        <div class="control-group">
+            <label>Chaos: <span id="chaos-value">0.2</span></label>
+            <input type="range" id="chaos" min="0.0" max="1.0" step="0.1" value="0.2">
+        </div>
+
+        <div class="control-group">
+            <label>Morph Factor: <span id="morphFactor-value">0.5</span></label>
+            <input type="range" id="morphFactor" min="0.0" max="1.0" step="0.1" value="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>Saturation: <span id="saturation-value">0.6</span></label>
+            <input type="range" id="saturation" min="0.0" max="1.0" step="0.1" value="0.6">
+        </div>
+
+        <div class="control-group">
+            <label>Hue: <span id="hue-value">200</span></label>
+            <input type="range" id="hue" min="0" max="360" step="10" value="200">
+        </div>
+    </div>
+
+    <script>
+        // DIRECT 5-LAYER LATTICE RENDERER
+        class FixedLatticeSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                this.program = null;
+                this.time = 0;
+                this.init();
+            }
+
+            init() {
+                if (!this.gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+
+                this.createShaderProgram();
+                this.setupBuffers();
+                this.resize();
+
+                console.log('🔮 Fixed Lattice System initialized');
+            }
+
+            createShaderProgram() {
+                const vertexShader = this.createShader(this.gl.VERTEX_SHADER, `
+                    attribute vec2 a_position;
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                    }
+                `);
+
+                const fragmentShader = this.createShader(this.gl.FRAGMENT_SHADER, `
+                    precision highp float;
+
+                    uniform float u_time;
+                    uniform vec2 u_resolution;
+                    uniform float u_rot4dXW, u_rot4dYW, u_rot4dZW;
+                    uniform float u_rot4dXY, u_rot4dXZ, u_rot4dYZ;
+                    uniform float u_gridDensity, u_chaos, u_speed;
+                    uniform float u_intensity, u_scale, u_morphFactor;
+                    uniform float u_saturation, u_hue;
+
+                    // 4D rotation matrices
+                    mat4 rotateXW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, 0, 0, -s, 0, 1, 0, 0, 0, 0, 1, 0, s, 0, 0, c);
+                    }
+
+                    mat4 rotateYW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, c, 0, -s, 0, 0, 1, 0, 0, s, 0, c);
+                    }
+
+                    mat4 rotateZW(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
+                    }
+
+                    mat4 rotateXY(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                    }
+
+                    mat4 rotateXZ(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
+                    }
+
+                    mat4 rotateYZ(float angle) {
+                        float c = cos(angle), s = sin(angle);
+                        return mat4(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
+                    }
+
+                    vec4 rotate4D(vec4 pos, float xw, float yw, float zw, float xy, float xz, float yz) {
+                        mat4 transform = rotateXW(xw) * rotateYW(yw) * rotateZW(zw) *
+                                       rotateXY(xy) * rotateXZ(xz) * rotateYZ(yz);
+                        return transform * pos;
+                    }
+
+                    vec3 project4Dto3D(vec4 pos4d, float distance) {
+                        float w = pos4d.w + distance;
+                        if (abs(w) < 0.001) w = 0.001;
+                        return pos4d.xyz / w;
+                    }
+
+                    // Hue rotation
+                    vec3 hueShift(vec3 color, float hue) {
+                        float angle = radians(hue);
+                        float cosA = cos(angle);
+                        float sinA = sin(angle);
+                        mat3 hueMatrix = mat3(
+                            cosA + (1.0 - cosA) * 0.213, (1.0 - cosA) * 0.715 - sinA * 0.072, (1.0 - cosA) * 0.072 + sinA * 0.213,
+                            (1.0 - cosA) * 0.213 + sinA * 0.143, cosA + (1.0 - cosA) * 0.715, (1.0 - cosA) * 0.072 - sinA * 0.283,
+                            (1.0 - cosA) * 0.213 - sinA * 0.072, (1.0 - cosA) * 0.715 + sinA * 0.140, cosA + (1.0 - cosA) * 0.072
+                        );
+                        return hueMatrix * color;
+                    }
+
+                    void main() {
+                        vec2 screenCoord = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+                        screenCoord.x *= u_resolution.x / u_resolution.y;
+
+                        // DIRECT 5-LAYER LATTICE CALCULATION
+                        vec3 currentPos = vec3(screenCoord * u_scale, 0.0);
+
+                        // === LAYER 1: PRIMARY LATTICE (BRIGHT BLUE) ===
+                        vec4 pos4d_1 = vec4(currentPos, u_time * u_speed * 0.1);
+                        pos4d_1 = rotate4D(pos4d_1, u_rot4dXW, u_rot4dYW, u_rot4dZW, u_rot4dXY, u_rot4dXZ, u_rot4dYZ);
+                        vec3 lattice3d_1 = project4Dto3D(pos4d_1, 2.0 + sin(u_time * 0.1));
+                        float spacing1 = u_scale * (1.0 + 0.3 * sin(u_rot4dXW + u_time * 0.05));
+                        vec3 grid1 = mod(lattice3d_1, spacing1) - spacing1 * 0.5;
+                        float thickness1 = (0.01 + u_gridDensity * 0.002) * u_scale;
+                        float lattice1 = length(max(abs(grid1) - vec3(thickness1), 0.0));
+
+                        // === LAYER 2: SECONDARY LATTICE (WARM ORANGE) ===
+                        vec4 pos4d_2 = vec4(currentPos, u_time * u_speed * 0.15 + 1.57);
+                        pos4d_2 = rotate4D(pos4d_2, u_rot4dXW + 0.5, u_rot4dYW + 0.3, u_rot4dZW + 0.7,
+                                          u_rot4dXY + 0.2, u_rot4dXZ + 0.8, u_rot4dYZ + 0.4);
+                        vec3 lattice3d_2 = project4Dto3D(pos4d_2, 1.5 + cos(u_time * 0.08));
+                        float spacing2 = u_scale * (0.8 + 0.2 * cos(u_rot4dYW + u_time * 0.07));
+                        vec3 grid2 = mod(lattice3d_2, spacing2) - spacing2 * 0.5;
+                        float thickness2 = (0.008 + u_gridDensity * 0.0018) * u_scale;
+                        float lattice2 = length(max(abs(grid2) - vec3(thickness2), 0.0));
+
+                        // === LAYER 3: TERTIARY LATTICE (YELLOW-GREEN) ===
+                        vec4 pos4d_3 = vec4(currentPos, u_time * u_speed * 0.08 + 3.14);
+                        pos4d_3 = rotate4D(pos4d_3, u_rot4dXW + 1.0, u_rot4dYW + 0.6, u_rot4dZW + 0.2,
+                                          u_rot4dXY + 1.2, u_rot4dXZ + 0.4, u_rot4dYZ + 0.9);
+                        vec3 lattice3d_3 = project4Dto3D(pos4d_3, 3.0 + sin(u_time * 0.06) * 0.5);
+                        float spacing3 = u_scale * (1.2 + 0.4 * sin(u_rot4dZW + u_time * 0.04));
+                        vec3 grid3 = mod(lattice3d_3, spacing3) - spacing3 * 0.5;
+                        float thickness3 = (0.005 + u_gridDensity * 0.0025) * u_scale;
+                        float lattice3 = length(max(abs(grid3) - vec3(thickness3), 0.0));
+
+                        // === LAYER 4: QUATERNARY LATTICE (MAGENTA) ===
+                        vec4 pos4d_4 = vec4(currentPos, u_time * u_speed * 0.12 + 4.71);
+                        pos4d_4 = rotate4D(pos4d_4, u_rot4dXW + 1.5, u_rot4dYW + 0.9, u_rot4dZW + 0.4,
+                                          u_rot4dXY + 0.7, u_rot4dXZ + 1.1, u_rot4dYZ + 0.3);
+                        vec3 lattice3d_4 = project4Dto3D(pos4d_4, 2.5 + cos(u_time * 0.09) * 0.3);
+                        float spacing4 = u_scale * (0.9 + 0.3 * cos(u_rot4dXY + u_time * 0.06));
+                        vec3 grid4 = mod(lattice3d_4, spacing4) - spacing4 * 0.5;
+                        float thickness4 = (0.003 + u_gridDensity * 0.003) * u_scale;
+                        float lattice4 = length(max(abs(grid4) - vec3(thickness4), 0.0));
+
+                        // === LAYER 5: QUINTESSENTIAL LATTICE (CYAN) ===
+                        vec4 pos4d_5 = vec4(currentPos, u_time * u_speed * 0.18 + 6.28);
+                        pos4d_5 = rotate4D(pos4d_5, u_rot4dXW + 2.0, u_rot4dYW + 1.2, u_rot4dZW + 0.8,
+                                          u_rot4dXY + 1.6, u_rot4dXZ + 0.5, u_rot4dYZ + 1.4);
+                        vec3 lattice3d_5 = project4Dto3D(pos4d_5, 1.8 + sin(u_time * 0.11) * 0.4);
+                        float spacing5 = u_scale * (1.4 + 0.5 * sin(u_rot4dXZ + u_time * 0.03));
+                        vec3 grid5 = mod(lattice3d_5, spacing5) - spacing5 * 0.5;
+                        float thickness5 = (0.006 + u_gridDensity * 0.0035) * u_scale;
+                        float lattice5 = length(max(abs(grid5) - vec3(thickness5), 0.0));
+
+                        // EMERGENT MOIRE INTERFERENCE PATTERNS
+                        float moire1 = sin(lattice3d_1.x * 20.0 / spacing1) * sin(lattice3d_2.x * 18.0 / spacing2);
+                        float moire2 = cos(lattice3d_3.y * 22.0 / spacing3) * cos(lattice3d_4.y * 16.0 / spacing4);
+                        float moire3 = sin(lattice3d_5.z * 24.0 / spacing5) * sin(lattice3d_1.z * 19.0 / spacing1);
+
+                        // Apply chaos-driven moire effects
+                        lattice1 -= moire1 * u_chaos * 0.15;
+                        lattice2 -= moire2 * u_chaos * 0.12;
+                        lattice3 -= moire3 * u_chaos * 0.18;
+                        lattice4 -= moire1 * u_chaos * 0.14;
+                        lattice5 -= moire2 * u_chaos * 0.16;
+
+                        // 5-LAYER COLOR SYSTEM
+                        vec3 layer1Color = vec3(0.3, 0.7, 1.0);      // Bright blue
+                        vec3 layer2Color = vec3(1.0, 0.5, 0.2);      // Warm orange
+                        vec3 layer3Color = vec3(0.8, 0.9, 0.3);      // Yellow-green
+                        vec3 layer4Color = vec3(0.9, 0.2, 0.7);      // Magenta
+                        vec3 layer5Color = vec3(0.4, 0.9, 0.9);      // Cyan
+                        vec3 fieldColor = vec3(0.05, 0.1, 0.2);      // Background
+
+                        // EMERGENT LAYER INTERACTIONS
+                        vec3 finalColor = fieldColor;
+                        float threshold = 0.15 * u_scale;
+
+                        // Layer visibility with emergent blending
+                        if (lattice1 < threshold) {
+                            float strength = 1.0 - (lattice1 / threshold);
+                            finalColor = mix(finalColor, layer1Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice2 < threshold) {
+                            float strength = 1.0 - (lattice2 / threshold);
+                            finalColor = mix(finalColor, layer2Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice3 < threshold) {
+                            float strength = 1.0 - (lattice3 / threshold);
+                            finalColor = mix(finalColor, layer3Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice4 < threshold) {
+                            float strength = 1.0 - (lattice4 / threshold);
+                            finalColor = mix(finalColor, layer4Color, strength * u_intensity * 2.0);
+                        }
+                        if (lattice5 < threshold) {
+                            float strength = 1.0 - (lattice5 / threshold);
+                            finalColor = mix(finalColor, layer5Color, strength * u_intensity * 2.0);
+                        }
+
+                        // EMERGENT INTERSECTION PROPERTIES
+                        vec3 intersectionColor = vec3(1.0, 1.0, 1.0);
+                        float intersections = 0.0;
+                        if (lattice1 < threshold && lattice2 < threshold) intersections += 0.3;
+                        if (lattice1 < threshold && lattice3 < threshold) intersections += 0.3;
+                        if (lattice2 < threshold && lattice4 < threshold) intersections += 0.3;
+                        if (lattice3 < threshold && lattice5 < threshold) intersections += 0.3;
+                        if (lattice4 < threshold && lattice5 < threshold) intersections += 0.3;
+
+                        if (intersections > 0.0) {
+                            finalColor = mix(finalColor, intersectionColor, intersections * u_intensity);
+                        }
+
+                        // Apply hue shift and saturation
+                        finalColor = hueShift(finalColor, u_hue);
+                        vec3 grayscale = vec3(dot(finalColor, vec3(0.299, 0.587, 0.114)));
+                        finalColor = mix(grayscale, finalColor, u_saturation);
+
+                        // Final intensity boost
+                        finalColor *= (0.5 + u_intensity * 2.0);
+
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `);
+
+                this.program = this.createProgram(vertexShader, fragmentShader);
+                this.getUniformLocations();
+            }
+
+            createShader(type, source) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    console.error('Shader compilation error:', this.gl.getShaderInfoLog(shader));
+                    this.gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+
+            createProgram(vertexShader, fragmentShader) {
+                const program = this.gl.createProgram();
+                this.gl.attachShader(program, vertexShader);
+                this.gl.attachShader(program, fragmentShader);
+                this.gl.linkProgram(program);
+
+                if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                    console.error('Program linking error:', this.gl.getProgramInfoLog(program));
+                    this.gl.deleteProgram(program);
+                    return null;
+                }
+                return program;
+            }
+
+            getUniformLocations() {
+                this.uniforms = {
+                    u_time: this.gl.getUniformLocation(this.program, 'u_time'),
+                    u_resolution: this.gl.getUniformLocation(this.program, 'u_resolution'),
+                    u_rot4dXW: this.gl.getUniformLocation(this.program, 'u_rot4dXW'),
+                    u_rot4dYW: this.gl.getUniformLocation(this.program, 'u_rot4dYW'),
+                    u_rot4dZW: this.gl.getUniformLocation(this.program, 'u_rot4dZW'),
+                    u_rot4dXY: this.gl.getUniformLocation(this.program, 'u_rot4dXY'),
+                    u_rot4dXZ: this.gl.getUniformLocation(this.program, 'u_rot4dXZ'),
+                    u_rot4dYZ: this.gl.getUniformLocation(this.program, 'u_rot4dYZ'),
+                    u_gridDensity: this.gl.getUniformLocation(this.program, 'u_gridDensity'),
+                    u_chaos: this.gl.getUniformLocation(this.program, 'u_chaos'),
+                    u_speed: this.gl.getUniformLocation(this.program, 'u_speed'),
+                    u_intensity: this.gl.getUniformLocation(this.program, 'u_intensity'),
+                    u_scale: this.gl.getUniformLocation(this.program, 'u_scale'),
+                    u_morphFactor: this.gl.getUniformLocation(this.program, 'u_morphFactor'),
+                    u_saturation: this.gl.getUniformLocation(this.program, 'u_saturation'),
+                    u_hue: this.gl.getUniformLocation(this.program, 'u_hue')
+                };
+            }
+
+            setupBuffers() {
+                const vertices = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
+
+                this.vertexBuffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            render(params) {
+                this.time += 0.016;
+
+                this.gl.useProgram(this.program);
+
+                // Set uniforms
+                this.gl.uniform1f(this.uniforms.u_time, this.time);
+                this.gl.uniform2f(this.uniforms.u_resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.u_rot4dXW, params.rot4dXW);
+                this.gl.uniform1f(this.uniforms.u_rot4dYW, params.rot4dYW);
+                this.gl.uniform1f(this.uniforms.u_rot4dZW, params.rot4dZW);
+                this.gl.uniform1f(this.uniforms.u_rot4dXY, params.rot4dXY);
+                this.gl.uniform1f(this.uniforms.u_rot4dXZ, params.rot4dXZ);
+                this.gl.uniform1f(this.uniforms.u_rot4dYZ, params.rot4dYZ);
+                this.gl.uniform1f(this.uniforms.u_gridDensity, params.gridDensity);
+                this.gl.uniform1f(this.uniforms.u_chaos, params.chaos);
+                this.gl.uniform1f(this.uniforms.u_speed, params.speed);
+                this.gl.uniform1f(this.uniforms.u_intensity, params.intensity);
+                this.gl.uniform1f(this.uniforms.u_scale, params.scale);
+                this.gl.uniform1f(this.uniforms.u_morphFactor, params.morphFactor);
+                this.gl.uniform1f(this.uniforms.u_saturation, params.saturation);
+                this.gl.uniform1f(this.uniforms.u_hue, params.hue);
+
+                // Bind buffer and draw
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
+                const positionLocation = this.gl.getAttribLocation(this.program, 'a_position');
+                this.gl.enableVertexAttribArray(positionLocation);
+                this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+            }
+        }
+
+        // Initialize system
+        const canvas = document.getElementById('canvas');
+        const latticeSystem = new FixedLatticeSystem(canvas);
+
+        // Parameters
+        const parameters = {
+            rot4dXW: 0, rot4dYW: 0, rot4dZW: 0,
+            rot4dXY: 0, rot4dXZ: 0, rot4dYZ: 0,
+            gridDensity: 15, scale: 1.0, speed: 1.0,
+            intensity: 0.9, chaos: 0.2, morphFactor: 0.5,
+            saturation: 0.6, hue: 200
+        };
+
+        // Update parameter values and display
+        function updateParameter(name, value) {
+            parameters[name] = parseFloat(value);
+            const display = document.getElementById(name + '-value');
+            if (display) {
+                if (name === 'gridDensity') {
+                    display.textContent = Math.floor(value);
+                } else {
+                    display.textContent = parseFloat(value).toFixed(2);
+                }
+            }
+        }
+
+        // Bind all controls
+        Object.keys(parameters).forEach(param => {
+            const control = document.getElementById(param);
+            if (control) {
+                control.addEventListener('input', (e) => {
+                    updateParameter(param, e.target.value);
+                });
+                updateParameter(param, control.value);
+            }
+        });
+
+        // Mouse interaction
+        let isMouseDown = false;
+        let lastMouseX = 0, lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+
+            const deltaX = (e.clientX - lastMouseX) * 0.01;
+            const deltaY = (e.clientY - lastMouseY) * 0.01;
+
+            parameters.rot4dXW += deltaX;
+            parameters.rot4dYW += deltaY;
+
+            document.getElementById('rot4dXW').value = parameters.rot4dXW;
+            document.getElementById('rot4dYW').value = parameters.rot4dYW;
+            updateParameter('rot4dXW', parameters.rot4dXW);
+            updateParameter('rot4dYW', parameters.rot4dYW);
+
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            isMouseDown = true;
+            lastMouseX = touch.clientX;
+            lastMouseY = touch.clientY;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isMouseDown) return;
+
+            const touch = e.touches[0];
+            const deltaX = (touch.clientX - lastMouseX) * 0.01;
+            const deltaY = (touch.clientY - lastMouseY) * 0.01;
+
+            parameters.rot4dXW += deltaX;
+            parameters.rot4dYW += deltaY;
+
+            document.getElementById('rot4dXW').value = parameters.rot4dXW;
+            document.getElementById('rot4dYW').value = parameters.rot4dYW;
+            updateParameter('rot4dXW', parameters.rot4dXW);
+            updateParameter('rot4dYW', parameters.rot4dYW);
+
+            lastMouseX = touch.clientX;
+            lastMouseY = touch.clientY;
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isMouseDown = false;
+        });
+
+        // Animation loop
+        function animate() {
+            latticeSystem.render(parameters);
+            requestAnimationFrame(animate);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            latticeSystem.resize();
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
